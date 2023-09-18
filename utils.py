@@ -10,6 +10,8 @@ x: input to pass through the residual block
 channels: number of channels to compute
 stride: convolution stride
 """
+
+# This is the newly proposed resBlock architecture
 def resBlock(x,channels=64,kernel_size=[3,3],scale=1):
 	tmp = slim.conv2d(x,channels,kernel_size,activation_fn=None)
 	tmp = tf.nn.relu(tmp)
@@ -27,6 +29,9 @@ scale: scale increase of upsample
 features: number of features to compute
 activation: activation function
 """
+
+# Implementing a pre-trained x2 network for x4 model (EDSR)
+# This pre-training strategy accelerates the training and improves the final performance (Graph in paper)
 def upsample(x,scale=2,features=64,activation=tf.nn.relu):
 	assert scale in [2,3,4]
 	x = slim.conv2d(x,features,[3,3],activation_fn=activation)
