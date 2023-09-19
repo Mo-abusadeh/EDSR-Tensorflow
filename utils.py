@@ -30,6 +30,14 @@ features: number of features to compute
 activation: activation function
 """
 
+"""
+###########################################
+COMMENTED OUT CODE: GAS-CNN
+NO UPSAMPLING MODULE
+###########################################
+"""
+
+"""
 # Implementing a pre-trained x2 network for x4 model (EDSR)
 # This pre-training strategy accelerates the training and improves the final performance (Graph in paper)
 def upsample(x,scale=2,features=64,activation=tf.nn.relu):
@@ -52,7 +60,7 @@ def upsample(x,scale=2,features=64,activation=tf.nn.relu):
 			#x = slim.conv2d_transpose(x,ps_features,6,stride=1,activation_fn=activation)
 			x = PS(x,2,color=True)
 	return x
-
+"""
 """
 Borrowed from https://github.com/tetrachrome/subpixel
 Used for subpixel phase shifting after deconv operations
@@ -88,3 +96,52 @@ def log10(x):
   numerator = tf.log(x)
   denominator = tf.log(tf.constant(10, dtype=numerator.dtype))
   return numerator / denominator
+
+
+
+"""
+###########################################
+PRE-PROCESSING FUNCTION: GAS-CNN
+FUNCTION FOR GENERATING IMAGES WITH GIBBS
+NEEDS EDITING TO FIT IN THIS CODE
+###########################################
+"""
+
+"""
+# Load the image
+image = cv2.imread('MRI_image.jpg', cv2.IMREAD_GRAYSCALE)
+
+# Perform Fourier Transform
+fft_image = fft2(image)
+fft_image_shifted = fftshift(fft_image)
+
+# Create a low-pass filter to attenuate 20% of highest frequencies
+rows, cols = image.shape
+center_row, center_col = rows // 2, cols // 2
+radius = min(center_row, center_col) * 0.2
+mask = np.zeros_like(fft_image)
+y, x = np.ogrid[-center_row:rows - center_row, -center_col:cols - center_col]
+mask_area = x**2 + y**2 <= radius**2
+mask[mask_area] = 1
+
+# Apply the filter
+filtered_fft = fft_image_shifted * mask
+
+# Inverse Fourier Transform
+filtered_image = ifftshift(filtered_fft)
+restored_image = ifft2(filtered_image).real
+
+# Display the original and the corrupted image
+plt.subplot(1, 2, 1)
+plt.title('Original Image')
+plt.imshow(image, cmap='gray')
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.title('Corrupted Image')
+plt.imshow(restored_image, cmap='gray')
+plt.axis('off')
+
+plt.show()
+
+"""

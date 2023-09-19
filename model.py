@@ -39,10 +39,20 @@ class EDSR(object):
 		mean_y = 127#tf.reduce_mean(self.target)
 		image_target =y- mean_y
 
+
+		"""
+		###########################################
+		NEW CODE: GAS-CNN
+		START OF THE EXTERNAL SKIP CONNECTION
+		###########################################
+		"""
+		Ext_inp = image_input
+
+		## Feature Extraction Net (FEN)##
 		#One convolution before res blocks and to convert to required feature depth
 		x = slim.conv2d(image_input,feature_size,[3,3])
 	
-		#Store the output of the first convolution to add later
+		#Store the output of the first convolution to add later (start of Global Skip Connection)
 		conv_1 = x	
 
 		"""
@@ -87,11 +97,27 @@ class EDSR(object):
 		x = slim.conv2d(x,feature_size,[3,3])
 		x += conv_1
 		
+		"""
+		###########################################
+		COMMENTED OUT CODE: GAS-CNN
+		NO UPSAMPLING MODULE
+		###########################################
+		"""
 		#Upsample output of the convolution		
-		x = utils.upsample(x,scale,feature_size,None)
+		#x = utils.upsample(x,scale,feature_size,None)
+
+
+		"""
+		###########################################
+		NEW CODE: GAS-CNN
+		END OF THE EXTERNAL SKIP CONNECTION
+		###########################################
+		"""
+		x += Ext_inp 
+
 
 		#One final convolution on the upsampling output
-		output = x#slim.conv2d(x,output_channels,[3,3])
+		output = x 		#slim.conv2d(x,output_channels,[3,3])
 		self.out = tf.clip_by_value(output+mean_x,0.0,255.0)
 
 		self.loss = loss = tf.reduce_mean(tf.losses.absolute_difference(image_target,output))
